@@ -1,0 +1,86 @@
+# P6 Progress Tracker – "Planner" Excel Ribbon Add-in (VBA)
+
+An Excel (.xlsm) macro toolkit that adds a custom ribbon tab (**"Plaነer"**, intended
+as **"Planner"** — a typo introduced by the Amharic keyboard swapping `n` for the
+Ethiopic character `ነ`) with one-click tools for converting a Primavera P6 activity
+export into a fully weighted S-curve / progress-tracking sheet: WBS coloring,
+budgeted-sum rollups, weightage, planned/actual % and value, and a schedule-update
+sync/review workflow.
+
+## Ribbon Layout
+
+**Tab: Plaነer**
+
+### Group: P6 Conversion Tools
+| Button | Macro | What it does |
+|---|---|---|
+| WBS Coloring | `Planner_WBSColoring` | Colors WBS summary rows by indent level (up to 5 levels), based on leading spaces in the ID column. |
+| Budgeted Sum | `Planner_BudgetedSum` | Inserts SUM formulas that roll up budgeted values from activities up through their parent WBS levels. |
+| A remover | `Planner_ARemover` | Strips the `{A}` (Actual Start/Finish) marker that P6 appends to date exports. |
+| Weightage | `Planner_Weightage` | Adds a Weightage column = activity budget ÷ total project budget, with WBS-level rollups. |
+| Planned Percentage | `Planner_PlannedPercentage` | Adds a Planned % column computed from Start Date, Finish Date, and a chosen status/data date. |
+| Planned Value | `Planner_PlannedValue` | Planned % × Weightage. |
+| Actual Percentage | `Planner_ActualPercentage` | Actual Quantity ÷ Total Quantity. |
+| Actual Value | `Planner_ActualValue` | Actual % × Weightage. |
+
+### Group: Schedule Update
+| Button | Macro | What it does |
+|---|---|---|
+| Sync Qty/Budget | `Planner_SyncByActivityID` | Pulls updated Total Quantity / Budgeted Amount from another workbook, matched by Activity ID. |
+| Update Review ▸ Blank Activities | `Planner_ShowBlankActivities` | Highlights blank activities (yellow) flagged during sync. |
+| Update Review ▸ Missing Activities | `Planner_ShowMissingActivities` | Highlights activities missing from the source (red). |
+| Update Review ▸ Duplicate Activities | `Planner_ShowDuplicateActivities` | Highlights duplicate Activity IDs (orange). |
+| Update Review ▸ Updated Rows | `Planner_ShowUpdatedRows` | Highlights rows changed by the sync (green). |
+| Update Review ▸ Clear Review Colors | `Planner_ClearReviewColors` | Clears all review highlight colors. |
+
+## Repository Structure
+
+```
+VBA/
+  customUI14.xml          # Ribbon tab/group/button definitions (Office Fluent UI XML)
+  WBS_Coloring.bas
+  Budgeted_sum.bas
+  A_Remover.bas
+  Weightage.bas
+  Planned_Percentage.bas
+  Planned_Value.bas
+  Actual_percent.bas
+  Actual_Value.bas
+  Sync_Qty_budget.bas
+  Updated_review.bas
+  frmPlannedPercentageHelp.frm
+  frmActualPercentageHelp.frm
+  ThisWorkbook.cls / Sheet1-5.cls / Class1.cls / UserForm1.frm / Module1.bas
+                           # workbook/sheet code-behind modules (empty in this build)
+```
+
+## How it works
+
+The workbook takes a Primavera P6 activity export (Activity ID, Activity Name, WBS
+structure via indentation, Budgeted Quantity, Total Quantity, Actual Quantity, dates)
+pasted into a worksheet, then the ribbon buttons progressively:
+
+1. Color-code the WBS hierarchy for readability (`WBS_Coloring`)
+2. Roll up budgeted quantities at each WBS level (`Budgeted_sum`)
+3. Clean P6's `{A}` date markers (`A_Remover`)
+4. Compute each activity's weight in the overall budget (`Weightage`)
+5. Compute Planned % / Planned Value against a chosen status date (`Planned_Percentage`, `Planned_Value`)
+6. Compute Actual % / Actual Value from field-reported quantities (`Actual_percent`, `Actual_Value`)
+7. On re-import of an updated schedule, sync quantities/budget by Activity ID and
+   visually flag blank/missing/duplicate/updated rows for review (`Sync_Qty_budget`, `Updated_review`)
+
+## Tools / extraction method
+
+VBA source was extracted from the `.xlsm` using
+[oletools](https://github.com/decalage2/oletools) (`olevba`), and the ribbon
+definition was pulled from `customUI/customUI14.xml` inside the OOXML package
+(the `.xlsm` is a zip archive).
+
+## Requirements
+
+- Excel with macros enabled (Windows or Excel/Microsoft 365)
+- No external dependencies — pure VBA + native Excel object model
+
+## License
+
+(https://zenodo.org/records/20619223).  \(\copyright \) Bedemariam.D
